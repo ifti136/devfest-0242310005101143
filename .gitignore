@@ -1,0 +1,11 @@
+# Ignore everything at the root by default...
+/*
+
+# ...then whitelist only the files that belong in the repo.
+!/.gitignore
+!/LICENSE
+!/.nojekyll
+!/index.html
+!/css/
+!/js/
+!/scripts/
