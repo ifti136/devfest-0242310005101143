@@ -8,16 +8,28 @@
 }
 
 .requirement-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2);
-  padding: var(--sp-2) var(--sp-3);
-  background: var(--paper-warm);
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-  transition: background .18s ease-out;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: 8px 12px;
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-left: 1px solid var(--status-not-provided-fg);
+    border-radius: var(--r-sm);
+    transition: background var(--motion) var(--ease);
+  }
+
+.requirement-row:hover {
+  background: var(--bg-hover);
 }
+
+/* Left state stripe per status */
+.requirement-row[data-status="ok"] { border-left-color: var(--status-ok-fg); }
+.requirement-row[data-status="missing"] { border-left-color: var(--status-missing-fg); }
+.requirement-row[data-status="expiry_needed"] { border-left-color: var(--status-expiry-needed-fg); }
+.requirement-row[data-status="expired"] { border-left-color: var(--status-expired-fg); }
+.requirement-row[data-status="not_provided"] { border-left-color: var(--status-not-provided-fg); }
 
 .req-left {
   display: flex;
@@ -29,15 +41,25 @@
 }
 
 .req-order {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  background: var(--bg-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font-size: 12px;
   font-weight: 600;
-  font-size: var(--fs-sm);
-  color: var(--ink-muted);
-  min-width: 1.5rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
 }
 
 .req-title {
   font-weight: 600;
   font-size: var(--fs-base);
+  color: var(--text-strong);
+  min-width: 0;
 }
 
 .req-badges {
@@ -47,29 +69,56 @@
 }
 
 .req-badge {
-  font-size: 0.65rem;
-  padding: 1px 6px;
-  border-radius: 999px;
-  border: 1px solid var(--line-strong);
-  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  border: 1px solid;
   white-space: nowrap;
 }
 
-.req-badge.mandatory { border-color: var(--blocked); color: var(--blocked); }
-.req-badge.optional  { border-color: var(--neutral);  color: var(--neutral); }
-.req-badge.expiry    { border-color: var(--warn);     color: var(--warn); }
+.req-badge.mandatory {
+  color: var(--text-strong);
+  border-color: var(--line-strong);
+  background: var(--bg-sunken);
+}
+.req-badge.optional {
+  color: var(--text-muted);
+  border-color: var(--line);
+  background: transparent;
+}
+.req-badge.expiry {
+  color: var(--status-expiry-needed-fg);
+  border-color: var(--status-expiry-needed-border);
+  background: var(--status-expiry-needed-bg);
+}
 
-/* ---- Status badge ---- */
+/* ---- Status pill with inline SVG glyph ---- */
 .status-badge {
-  font-size: var(--fs-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  font-size: 12px;
   font-weight: 600;
-  padding: 2px 8px;
-  border-radius: var(--r-sm);
-  transition: background .18s ease-out, color .18s ease-out;
+  border: 1px solid;
+  transition: background var(--motion) var(--ease), color var(--motion) var(--ease), border-color var(--motion) var(--ease);
+}
+
+.status-badge svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 @media (max-width: 480px) {
-  /* Bangla status labels are long — let them wrap instead of overflowing */
   .status-badge {
     white-space: normal;
     text-align: center;
@@ -77,11 +126,31 @@
   }
 }
 
-.status-ok            { background: var(--ok-bg);      color: var(--ok); }
-.status-missing       { background: var(--blocked-bg); color: var(--blocked); }
-.status-expiry_needed { background: var(--warn-bg);    color: var(--warn); }
-.status-expired       { background: var(--blocked-bg); color: var(--blocked); }
-.status-not_provided  { background: var(--neutral-bg); color: var(--neutral); }
+.status-ok {
+  background: var(--status-ok-bg);
+  color: var(--status-ok-fg);
+  border-color: var(--status-ok-border);
+}
+.status-missing {
+  background: var(--status-missing-bg);
+  color: var(--status-missing-fg);
+  border-color: var(--status-missing-border);
+}
+.status-expiry_needed {
+  background: var(--status-expiry-needed-bg);
+  color: var(--status-expiry-needed-fg);
+  border-color: var(--status-expiry-needed-border);
+}
+.status-expired {
+  background: var(--status-expired-bg);
+  color: var(--status-expired-fg);
+  border-color: var(--status-expired-border);
+}
+.status-not_provided {
+  background: var(--status-not-provided-bg);
+  color: var(--status-not-provided-fg);
+  border-color: var(--status-not-provided-border);
+}
 
 /* ---- Match select + expiry input ---- */
 .req-right {
@@ -91,18 +160,20 @@
   flex-wrap: wrap;
 }
 
-.match-select {
+.match-select,
+.expiry-input {
   font-family: var(--font-body);
   font-size: var(--fs-sm);
   padding: var(--sp-1) var(--sp-2);
-  min-height: 32px;
+  min-height: 36px;
   min-width: 0;
   max-width: 220px;
   border: 1px solid var(--line-strong);
   border-radius: var(--r-sm);
-  background: var(--paper);
-  color: var(--ink);
+  background: var(--bg-panel);
+  color: var(--text);
   cursor: pointer;
+  transition: border-color var(--motion) var(--ease), background var(--motion) var(--ease);
 }
 
 @media (max-width: 480px) {
@@ -113,72 +184,137 @@
   }
 }
 
-.match-select:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+@media (pointer: coarse) {
+  .match-select,
+  .expiry-input {
+    min-height: 44px;
+  }
 }
 
-.expiry-input {
-  font-family: var(--font-body);
-  font-size: var(--fs-sm);
-  padding: var(--sp-1) var(--sp-2);
-  min-height: 32px;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--r-sm);
-  background: var(--paper);
-  color: var(--ink);
-}
-
+.match-select:focus-visible,
 .expiry-input:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 /* ---- Dropzone ---- */
 .dropzone {
-  border: 2px dashed var(--line-strong);
+  border: 1.5px dashed var(--line-strong);
   border-radius: var(--r-md);
-  padding: var(--sp-6) var(--sp-4);
+  background: var(--bg-sunken);
+  padding: 24px 16px;
   text-align: center;
   cursor: pointer;
-  transition: border-color .15s, background .15s;
+  transition: border-color var(--motion) var(--ease), background var(--motion) var(--ease);
   margin-bottom: var(--sp-3);
+  position: relative;
 }
 
-.dropzone:hover,
+.dropzone:hover {
+  border-color: var(--text-muted);
+  background: var(--bg-hover);
+}
 .dropzone.drag-over {
-  border-color: var(--accent);
-  background: var(--accent-light);
+  border-color: var(--status-ok-fg);
+  background: var(--status-ok-bg);
 }
 
-.dropzone-text {
-  font-size: var(--fs-base);
-  color: var(--ink-soft);
-  margin-bottom: var(--sp-1);
+.dropzone.has-files {
+  padding: 10px 16px;
+  text-align: left;
 }
 
-.dropzone-or {
+.dropzone.has-files .upload-empty {
+  display: none;
+}
+
+.dropzone.has-files .dropzone-add-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
   font-size: var(--fs-sm);
-  color: var(--ink-muted);
-  margin-bottom: var(--sp-2);
+  font-weight: 500;
 }
 
+.dropzone-add-more {
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.dropzone-add-more svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Empty state inside dropzone */
+.upload-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-muted);
+}
+
+.upload-empty .upload-icon {
+  width: 28px;
+  height: 28px;
+  stroke: var(--text-muted);
+  fill: none;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.upload-empty .upload-drop {
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.upload-empty .upload-or {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.upload-empty .browse-btn {
+  margin-top: 4px;
+}
+
+.upload-empty .upload-limits {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Browse button (inside dropzone) */
 .browse-btn {
   font-family: var(--font-body);
   font-size: var(--fs-sm);
   font-weight: 600;
   padding: var(--sp-2) var(--sp-4);
   min-height: 36px;
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--text-strong);
+  color: var(--text-inverse);
   border: none;
   border-radius: var(--r-sm);
   cursor: pointer;
+  transition: opacity .15s, background var(--motion) var(--ease);
+}
+
+@media (pointer: coarse) {
+  .browse-btn { min-height: 44px; }
 }
 
 .browse-btn:hover { opacity: .85; }
 .browse-btn:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
@@ -187,18 +323,12 @@
 /* ---- Upload messages ---- */
 .upload-error {
   font-size: var(--fs-sm);
-  color: var(--blocked);
-  background: var(--blocked-bg);
+  color: var(--status-missing-fg);
+  background: var(--status-missing-bg);
   padding: var(--sp-2);
   border-radius: var(--r-sm);
   margin-bottom: var(--sp-2);
-}
-
-.upload-empty {
-  font-size: var(--fs-sm);
-  color: var(--ink-muted);
-  text-align: center;
-  padding: var(--sp-3);
+  border: 1px solid var(--status-missing-border);
 }
 
 /* ---- File list ---- */
@@ -210,13 +340,39 @@
 
 .file-item {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-2);
-  padding: var(--sp-2) var(--sp-3);
-  background: var(--paper-warm);
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 10px;
+  background: var(--bg-raised);
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
+  transition: background var(--motion) var(--ease), border-color var(--motion) var(--ease);
+}
+
+.file-item:hover {
+  background: var(--bg-hover);
+}
+
+/* PDF glyph tile */
+.file-glyph {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  background: var(--bg-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  flex-shrink: 0;
+}
+
+.file-glyph svg {
+  width: 20px;
+  height: 20px;
+  stroke: var(--status-missing-fg);
+  fill: none;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .file-info {
@@ -229,61 +385,101 @@
 
 .file-name {
   font-weight: 600;
-  font-size: var(--fs-sm);
+  font-size: 13px;
+  color: var(--text-strong);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .file-pages {
-  font-size: 0.65rem;
-  color: var(--ink-muted);
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .file-dup-badge {
-  display: inline-block;
-  font-size: 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 1px 6px;
-  border-radius: 999px;
-  background: var(--warn-bg);
-  color: var(--warn);
-  border: 1px solid var(--warn);
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: var(--status-expiry-needed-bg);
+  color: var(--status-expiry-needed-fg);
+  border: 1px solid var(--status-expiry-needed-border);
   width: fit-content;
 }
 
+.file-dup-badge svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .file-match-info {
-  font-size: 0.65rem;
-  color: var(--ink-muted);
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .file-match-info.matched {
-  color: var(--ok);
+  color: var(--status-ok-fg);
   font-weight: 600;
 }
 
+/* Remove button */
 .file-remove {
-  font-size: var(--fs-md);
   width: 32px;
   height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
   background: none;
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
-  color: var(--ink-muted);
+  color: var(--text-muted);
   cursor: pointer;
   flex-shrink: 0;
+  transition: background var(--motion) var(--ease), color var(--motion) var(--ease), border-color var(--motion) var(--ease);
+}
+
+@media (pointer: coarse) {
+  .file-remove { width: 44px; height: 44px; }
+}
+
+.file-remove svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .file-remove:hover {
-  background: var(--blocked-bg);
-  color: var(--blocked);
-  border-color: var(--blocked);
+  background: var(--status-missing-bg);
+  color: var(--status-missing-fg);
+  border-color: var(--status-missing-border);
 }
 
 .file-remove:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Visually hidden utility */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

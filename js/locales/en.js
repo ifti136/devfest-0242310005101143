@@ -10,6 +10,10 @@ export default {
     tagline: "Match, check, and build your tender document package",
   },
 
+  header: {
+    processing: "Local processing",
+  },
+
   tender: {
     summary: "Tender summary",
     id: "Tender ID",
@@ -51,7 +55,6 @@ export default {
     drop: "Drop PDFs here",
     or: "or",
     browse: "Browse files",
-    empty: "No PDFs added yet — drop files here",
     rejected: "Only PDF files can be added",
     too_many: "Maximum {max} files allowed",
     too_large: "Total size must stay under {max} MB",
@@ -60,6 +63,13 @@ export default {
     matched_to: "Matched to {name}",
     unmatched: "Unmatched",
     remove: "Remove file",
+    limits: "PDF only · up to {max} files · {mb} MB total",
+    add_more: "Add more PDFs",
+  },
+
+  theme: {
+    switch_dark: "Switch to dark theme",
+    switch_light: "Switch to light theme",
   },
 
   blocking: {
@@ -68,6 +78,19 @@ export default {
     expiry_needed: "{count} document(s) need an expiry date",
     expired: "{count} document(s) have expired",
     duplicate_match: "Duplicate files matched to different requirements",
+  },
+
+  trust: {
+    browser: "Browser-only processing",
+    no_upload: "No document uploads",
+    validation: "Automatic validation",
+    pdf: "Submission-ready PDF",
+  },
+
+  progress: {
+    label: "Package readiness",
+    ready: "{ready} of {total} ready",
+    complete: "All {total} ready",
   },
 
   generate: {
@@ -89,5 +112,8 @@ export default {
     remove_file: "Remove {name}",
     match_select: "Match a file for {name}",
     expiry_input: "Expiry date for {name}",
+    local_processing: "Processing happens in your browser",
+    trust_row: "Processing guarantees",
+    progress: "Package readiness: {ready} of {total} ready",
   },
 };

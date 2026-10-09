@@ -261,7 +261,7 @@ async function generatePDF() {
   if (btn) {
     btn.disabled = true;
     btn.classList.add('loading');
-    btn.textContent = t('generate.loading');
+    const l = btn.querySelector('.btn-label'); if (l) l.textContent = t('generate.loading'); else btn.textContent = t('generate.loading');
   }
 
   try {
@@ -363,7 +363,7 @@ async function generatePDF() {
     isGenerating = false;
     if (btn) {
       btn.classList.remove('loading');
-      btn.textContent = t('generate.button');
+      const l = btn.querySelector('.btn-label'); if (l) l.textContent = t('generate.button'); else btn.textContent = t('generate.button');
     }
     renderBlockingBar(); // restore correct disabled state
   }
@@ -374,6 +374,165 @@ async function generatePDF() {
 /* ------------------------------------------------------------------ */
 
 const $ = sel => document.querySelector(sel);
+
+/* ------------------------------------------------------------------ */
+/* SVG icon helper                                                     */
+/* ------------------------------------------------------------------ */
+
+function svgIcon(name, size = 24) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('class', `icon icon-${name}`);
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', size);
+  svg.setAttribute('height', size);
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '1.75');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+
+  const shapes = {
+    ok: () => {
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', '12'); c.setAttribute('cy', '12'); c.setAttribute('r', '7');
+      const p = document.createElementNS(NS, 'polyline');
+      p.setAttribute('points', '7 12 11 16 17 8');
+      svg.append(c, p);
+    },
+    missing: () => {
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', '12'); c.setAttribute('cy', '12'); c.setAttribute('r', '7');
+      c.setAttribute('stroke-dasharray', '4 3');
+      svg.append(c);
+    },
+    expiry: () => {
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', '12'); c.setAttribute('cy', '12'); c.setAttribute('r', '7');
+      const h1 = document.createElementNS(NS, 'line');
+      h1.setAttribute('x1', '12'); h1.setAttribute('y1', '12'); h1.setAttribute('x2', '12'); h1.setAttribute('y2', '7');
+      const h2 = document.createElementNS(NS, 'line');
+      h2.setAttribute('x1', '12'); h2.setAttribute('y1', '12'); h2.setAttribute('x2', '15'); h2.setAttribute('y2', '12');
+      svg.append(c, h1, h2);
+    },
+    expired: () => {
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', '12'); c.setAttribute('cy', '12'); c.setAttribute('r', '7');
+      const h1 = document.createElementNS(NS, 'line');
+      h1.setAttribute('x1', '12'); h1.setAttribute('y1', '12'); h1.setAttribute('x2', '12'); h1.setAttribute('y2', '7');
+      const h2 = document.createElementNS(NS, 'line');
+      h2.setAttribute('x1', '12'); h2.setAttribute('y1', '12'); h2.setAttribute('x2', '15'); h2.setAttribute('y2', '12');
+      const slash = document.createElementNS(NS, 'line');
+      slash.setAttribute('x1', '5'); slash.setAttribute('y1', '5'); slash.setAttribute('x2', '19'); slash.setAttribute('y2', '19');
+      svg.append(c, h1, h2, slash);
+    },
+    not_provided: () => {
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', '12'); c.setAttribute('cy', '12'); c.setAttribute('r', '7');
+      const m = document.createElementNS(NS, 'line');
+      m.setAttribute('x1', '7'); m.setAttribute('y1', '12'); m.setAttribute('x2', '17'); m.setAttribute('y2', '12');
+      svg.append(c, m);
+    },
+    warn: () => {
+      const t = document.createElementNS(NS, 'path');
+      t.setAttribute('d', 'M12 2L2 22h20Z');
+      const ex = document.createElementNS(NS, 'line');
+      ex.setAttribute('x1', '12'); ex.setAttribute('y1', '9'); ex.setAttribute('x2', '12'); ex.setAttribute('y2', '13');
+      const dot = document.createElementNS(NS, 'circle');
+      dot.setAttribute('cx', '12'); dot.setAttribute('cy', '17'); dot.setAttribute('r', '1');
+      svg.append(t, ex, dot);
+    },
+    check: () => {
+      const p = document.createElementNS(NS, 'polyline');
+      p.setAttribute('points', '5 12.5 9 16.5 19 7.5');
+      svg.append(p);
+    },
+    dup: () => {
+      const r1 = document.createElementNS(NS, 'rect');
+      r1.setAttribute('x', '4'); r1.setAttribute('y', '4'); r1.setAttribute('width', '12'); r1.setAttribute('height', '12'); r1.setAttribute('rx', '2');
+      const r2 = document.createElementNS(NS, 'rect');
+      r2.setAttribute('x', '8'); r2.setAttribute('y', '8'); r2.setAttribute('width', '12'); r2.setAttribute('height', '12'); r2.setAttribute('rx', '2');
+      svg.append(r1, r2);
+    },
+    remove: () => {
+      const l1 = document.createElementNS(NS, 'line');
+      l1.setAttribute('x1', '5'); l1.setAttribute('y1', '5'); l1.setAttribute('x2', '19'); l1.setAttribute('y2', '19');
+      const l2 = document.createElementNS(NS, 'line');
+      l2.setAttribute('x1', '19'); l2.setAttribute('y1', '5'); l2.setAttribute('x2', '5'); l2.setAttribute('y2', '19');
+      svg.append(l1, l2);
+    },
+    pdf: () => {
+      const page = document.createElementNS(NS, 'path');
+      page.setAttribute('d', 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z');
+      const fold = document.createElementNS(NS, 'path');
+      fold.setAttribute('d', 'M14 2v6h6');
+      const l1 = document.createElementNS(NS, 'line');
+      l1.setAttribute('x1', '8'); l1.setAttribute('y1', '12'); l1.setAttribute('x2', '16'); l1.setAttribute('y2', '12');
+      const l2 = document.createElementNS(NS, 'line');
+      l2.setAttribute('x1', '8'); l2.setAttribute('y1', '16'); l2.setAttribute('x2', '16'); l2.setAttribute('y2', '16');
+      svg.append(page, fold, l1, l2);
+    },
+  };
+
+  if (shapes[name]) shapes[name]();
+  return svg;
+}
+
+/* ------------------------------------------------------------------ */
+/* Progress meter                                                      */
+/* ------------------------------------------------------------------ */
+
+function renderProgressMeter() {
+  const meter = $('.progress-meter');
+  const fill = $('.meter-fill');
+  const value = $('.meter-value');
+
+  const ready = requirements.filter(r => statusFor(r) === 'ok').length;
+  const total = requirements.length;
+
+  if (fill) {
+    fill.style.width = total ? (ready / total * 100) + '%' : '0%';
+  }
+
+  if (value) {
+    const complete = total > 0 && ready === total;
+
+    // Text element (preserves check icon)
+    let textEl = value.querySelector('.meter-text');
+    if (!textEl) {
+      textEl = document.createElement('span');
+      textEl.className = 'meter-text';
+      value.prepend(textEl);
+    }
+    textEl.textContent = complete
+      ? t('progress.complete', { total })
+      : t('progress.ready', { ready, total });
+
+    // Check icon (create if missing, toggle visibility)
+    let check = value.querySelector('.meter-check');
+    if (!check) {
+      check = svgIcon('check', 14);
+      check.classList.add('meter-check');
+      value.append(check);
+    }
+    if (complete) check.removeAttribute('hidden');
+    else check.setAttribute('hidden', '');
+  }
+
+  if (meter) {
+    meter.setAttribute('aria-valuemin', '0');
+    meter.setAttribute('aria-valuemax', String(total));
+    meter.setAttribute('aria-valuenow', String(ready));
+    const complete = total > 0 && ready === total;
+    const ariaText = complete
+      ? t('progress.complete', { total })
+      : t('progress.ready', { ready, total });
+    meter.setAttribute('aria-valuetext', ariaText);
+    meter.setAttribute('aria-label', t('a11y.progress', { ready, total }));
+    meter.dataset.complete = complete ? 'true' : 'false';
+    meter.dataset.ready = String(ready);
+  }
+}
 
 function renderTenderSummary() {
   const el = $('#tender-summary');
@@ -449,7 +608,9 @@ function renderRequirements() {
     /* middle: status badge */
     const statusEl = document.createElement('span');
     statusEl.className = `status-badge status-${status}`;
-    statusEl.textContent = t(`status.${status}`);
+    const glyphMap = { ok: 'ok', missing: 'missing', expiry_needed: 'expiry', expired: 'expired', not_provided: 'not_provided' };
+    statusEl.appendChild(svgIcon(glyphMap[status], 14));
+    statusEl.appendChild(document.createTextNode(t(`status.${status}`)));
 
     /* right: match select (+ expiry if needed) */
     const right = document.createElement('div');
@@ -512,12 +673,19 @@ function renderFileList() {
   const empty = $('#upload-empty');
   if (empty) empty.hidden = state.files.length > 0;
 
+  const dz = $('#dropzone');
+  if (dz) dz.classList.toggle('has-files', state.files.length > 0);
+
   const dupes = duplicateHashes();
   const lang = getLang();
 
   for (const f of state.files) {
     const item = document.createElement('div');
     item.className = 'file-item';
+
+    const glyph = document.createElement('span');
+    glyph.className = 'file-glyph';
+    glyph.appendChild(svgIcon('pdf', 20));
 
     const info = document.createElement('div');
     info.className = 'file-info';
@@ -537,7 +705,8 @@ function renderFileList() {
     if (dupes.has(f.hash)) {
       const dup = document.createElement('span');
       dup.className = 'file-dup-badge';
-      dup.textContent = t('upload.duplicate');
+      dup.appendChild(svgIcon('dup', 12));
+      dup.appendChild(document.createTextNode(t('upload.duplicate')));
       info.append(dup);
     }
 
@@ -560,10 +729,14 @@ function renderFileList() {
     removeBtn.className = 'file-remove';
     removeBtn.type = 'button';
     removeBtn.setAttribute('aria-label', t('a11y.remove_file', { name: f.name }));
-    removeBtn.textContent = '\u00d7';
+    removeBtn.appendChild(svgIcon('remove', 16));
+    const sr = document.createElement('span');
+    sr.className = 'visually-hidden';
+    sr.textContent = '\u00d7';
+    removeBtn.appendChild(sr);
     removeBtn.addEventListener('click', () => { removeFile(f.id); renderAll(); });
 
-    item.append(info, removeBtn);
+    item.append(glyph, info, removeBtn);
     list.append(item);
   }
 }
@@ -577,7 +750,9 @@ function renderBlockingBar() {
   if (isGenerating) return;
 
   // app.js owns the button label (no data-i18n) — keep it in sync with locale
-  btn.textContent = t('generate.button');
+  const label = btn.querySelector('.btn-label');
+  if (label) label.textContent = t('generate.button');
+  else btn.textContent = t('generate.button');
 
   const counts = blockingCounts();
 
@@ -592,15 +767,15 @@ function renderBlockingBar() {
     hashToReq.set(f.hash, f.matchedReqId);
   }
 
-  const reasons = [];
-  if (counts.missing) reasons.push(t('blocking.missing', { count: counts.missing }));
-  if (counts.expiry_needed) reasons.push(t('blocking.expiry_needed', { count: counts.expiry_needed }));
-  if (counts.expired) reasons.push(t('blocking.expired', { count: counts.expired }));
-  if (dupMismatch) reasons.push(t('blocking.duplicate_match'));
+  const items = [];
+  if (counts.missing)        items.push({ kind: 'missing',         label: t('blocking.missing', { count: counts.missing }) });
+  if (counts.expiry_needed)  items.push({ kind: 'expiry_needed',   label: t('blocking.expiry_needed', { count: counts.expiry_needed }) });
+  if (counts.expired)        items.push({ kind: 'expired',         label: t('blocking.expired', { count: counts.expired }) });
+  if (dupMismatch)           items.push({ kind: 'duplicate_match', label: t('blocking.duplicate_match') });
 
   bar.replaceChildren();
 
-  if (reasons.length === 0) {
+  if (items.length === 0) {
     bar.hidden = true;
     btn.disabled = false;
     btn.removeAttribute('title');
@@ -612,13 +787,17 @@ function renderBlockingBar() {
   btn.title = t('generate.disabled');
 
   const heading = document.createElement('strong');
-  heading.textContent = t('blocking.heading');
+  heading.appendChild(svgIcon('warn', 16));
+  heading.appendChild(document.createTextNode(t('blocking.heading')));
   bar.append(heading);
 
   const ul = document.createElement('ul');
-  for (const r of reasons) {
+  const glyphMap = { missing: 'missing', expiry_needed: 'expiry', expired: 'expired', duplicate_match: 'dup' };
+  for (const item of items) {
     const li = document.createElement('li');
-    li.textContent = r;
+    li.className = item.kind;
+    li.appendChild(svgIcon(glyphMap[item.kind], 14));
+    li.appendChild(document.createTextNode(item.label));
     ul.append(li);
   }
   bar.append(ul);
@@ -628,8 +807,15 @@ function renderBlockingBar() {
 /* Re-render                                                           */
 /* ------------------------------------------------------------------ */
 
+function renderUploadLimits() {
+  const el = $('#upload-limits');
+  if (el) el.textContent = t('upload.limits', { max: MAX_FILES, mb: MAX_TOTAL_MB });
+}
+
 function renderAll() {
   renderTenderSummary();
+  renderProgressMeter();
+  renderUploadLimits();
   renderRequirements();
   renderFileList();
   renderBlockingBar();

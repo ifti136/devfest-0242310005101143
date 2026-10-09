@@ -1,30 +1,73 @@
 /* Design tokens — Tender Package Builder */
 
+:root { /* ---- LIGHT "Paper" (default) ---- */
+  /* surfaces (hierarchy: canvas < panel < raised; sunken = inset well) */
+  --bg-canvas: #faf8f4;   --bg-panel: #fdfbf6;  --bg-raised: #f3ede2;
+  --bg-sunken: #eee7da;   --bg-hover: #f7f2e7;
+  /* borders (warm ink-tinted, never pure black) */
+  --line: rgba(30,29,25,.12);        --line-strong: rgba(30,29,25,.24);
+  /* text tiers */
+  --text-strong: #1e1e1e;  --text: #2f2d29;  --text-muted: #67625b;  --text-inverse: #faf8f4;
+  /* accent (RESERVED — see reserved-for list) */
+  --accent: #4a5ab5;  --accent-strong: #3d4c9e;  --accent-soft: #e8eaf6;  --accent-contrast: #ffffff;
+  /* header band */
+  --header-from: #26262e;  --header-to: #191920;  --header-sheen: rgba(74,90,181,.22);
+  --header-text: #f3f1ec;  --header-text-muted: rgba(243,241,236,.74);
+  --header-border: rgba(30,29,25,.55);
+  --header-hover: rgba(255,255,255,.08);
+  /* focus */
+  --focus-ring: #4a5ab5;
+  /* shadow (tinted from surface hue, not pure black) */
+  --shadow-sm: 0 1px 2px rgba(31,29,24,.08);
+  --shadow-md: 0 6px 18px rgba(31,29,24,.12);
+  /* status — 5 groups × fg/bg/border */
+  --status-ok-fg:#276d2b;             --status-ok-bg:#e8f5e9;             --status-ok-border:#a7cfa9;
+  --status-missing-fg:#b3261e;        --status-missing-bg:#fdeceb;        --status-missing-border:#e7aaa4;
+  --status-expiry-needed-fg:#8a5200;  --status-expiry-needed-bg:#fff6e0;  --status-expiry-needed-border:#ddb877;
+  --status-expired-fg:#9c1c16;        --status-expired-bg:#fbe9e6;        --status-expired-border:#e2a199;
+  --status-not-provided-fg:#5e5952;   --status-not-provided-bg:#ececec;   --status-not-provided-border:#c9c6c0;
+}
+
+html[data-theme="dark"] { /* ---- DARK "Teal" ---- */
+  --bg-canvas:#071d1b;  --bg-panel:#0b2f2e;  --bg-raised:#0f3a38;
+  --bg-sunken:#082725;  --bg-hover:#124341;
+  --line: rgba(229,242,244,.14);  --line-strong: rgba(229,242,244,.28);
+  --text-strong:#f4fdfe;  --text:#e5f2f4;  --text-muted:#8fb3bd;  --text-inverse:#041412;
+  --accent:#33b3a0;  --accent-strong:#43c9b5;  --accent-soft:#0e3a37;  --accent-contrast:#041412;
+  --header-from:#04211f;  --header-to:#021211;  --header-sheen: rgba(47,168,148,.30);
+  --header-text:#e9f7f8;  --header-text-muted: rgba(233,247,248,.76);
+  --header-border: rgba(4,20,18,.9);
+  --header-hover: rgba(255,255,255,.10);
+  --focus-ring:#4fd1bd;
+  --shadow-sm: 0 1px 2px rgba(1,12,11,.50);
+  --shadow-md: 0 6px 18px rgba(1,12,11,.55);
+  --status-ok-fg:#69d98f;             --status-ok-bg:#0e3324;             --status-ok-border:#2f6b4a;
+  --status-missing-fg:#f28b82;        --status-missing-bg:#3a1418;        --status-missing-border:#7a3330;
+  --status-expiry-needed-fg:#f5c26b;  --status-expiry-needed-bg:#3a2c10;  --status-expiry-needed-border:#7a6122;
+  --status-expired-fg:#ff9a86;        --status-expired-bg:#3d1a14;        --status-expired-border:#7f382c;
+  --status-not-provided-fg:#a8bcc4;   --status-not-provided-bg:#232f31;   --status-not-provided-border:#46565a;
+}
+
+/* motion + icon + spacing additions (theme-independent) */
 :root {
-  /* Palette — tender document / manila folder / rubber stamp */
-  --paper:         #faf8f4;
-  --paper-warm:    #f3ede2;
-  --ink:           #1e1e1e;
-  --ink-soft:      #444444;
-  --ink-muted:     #777777;
-  --line:          rgba(0,0,0,.10);
-  --line-strong:   rgba(0,0,0,.18);
+  --motion: 180ms;  --ease: cubic-bezier(.2,.8,.2,1);
+  --r-pill: 999px;  --sp-8: 2rem;
+  --icon-sm: 14px;  --icon-md: 18px;  --icon-lg: 24px;
+}
 
-  /* Status hues */
-  --ok:            #2e7d32;
-  --ok-bg:         #e8f5e9;
-  --warn:          #b26a00;
-  --warn-bg:       #fff8e1;
-  --blocked:       #c62828;
-  --blocked-bg:    #fce4ec;
-  --neutral:       #616161;
-  --neutral-bg:    #eeeeee;
+/* legacy aliases — delete usages over time; keep so nothing breaks mid-migration */
+:root {
+  --paper: var(--bg-canvas);   --paper-warm: var(--bg-raised);
+  --ink: var(--text-strong);   --ink-soft: var(--text);  --ink-muted: var(--text-muted);
+  --accent-light: var(--accent-soft);  --shadow: var(--shadow-sm);
+  --ok: var(--status-ok-fg);       --ok-bg: var(--status-ok-bg);
+  --warn: var(--status-expiry-needed-fg); --warn-bg: var(--status-expiry-needed-bg);
+  --blocked: var(--status-missing-fg);    --blocked-bg: var(--status-missing-bg);
+  --neutral: var(--status-not-provided-fg); --neutral-bg: var(--status-not-provided-bg);
+}
 
-  /* Accent — reserved: generate btn, active toggle, focus, OK badge */
-  --accent:        #4a5ab5;
-  --accent-light:  #e8eaf6;
-
-  /* Type */
+/* ---- Type ---- */
+:root {
   --font-body:     'Inter', system-ui, -apple-system, sans-serif;
   --font-display:  Charter, Georgia, 'Times New Roman', serif;
   --font-bn:       'Noto Sans Bengali', 'Inter', sans-serif;
@@ -45,9 +88,6 @@
   /* Radius */
   --r-sm: 4px;
   --r-md: 8px;
-
-  /* Shadow */
-  --shadow: 0 1px 3px rgba(0,0,0,.08);
 
   /* Breakpoints referenced in media queries */
   --bp-mobile: 360px;
