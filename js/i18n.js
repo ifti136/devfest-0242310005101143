@@ -1,220 +1,173 @@
+/**
+ * i18n Module — Tender Package Builder
+ * Per spec from 04-i18n-spec.md
+ * The only module that knows about languages.
+ */
+
+import en from './locales/en.js';
+import bn from './locales/bn.js';
+
+const LANG_STORAGE_KEY = 'lang';
+
 let currentLang = 'en';
-let locales = { en: {}, bn: {} };
-let initialized = false;
+const locales = { en, bn };
 
-/**
- * Resolve initial language per spec:
- * 1) localStorage 'lang'
- * 2) ?lang= URL param
- * 3) navigator.language starts with 'bn'
- * 4) 'en' (default)
- */
-function resolveInitialLang() {
-  const saved = localStorage.getItem('lang');
-  if (saved === 'bn' || saved === 'en') return saved;
+/* ---- helpers ---- */
 
-  const params = new URLSearchParams(window.location.search);
-  const urlLang = params.get('lang');
-  if (urlLang === 'bn' || urlLang === 'en') return urlLang;
-
-  if (navigator.language?.toLowerCase().startsWith('bn')) return 'bn';
-
-  return 'en';
+function flatten(obj, prefix = '') {
+  return Object.entries(obj).flatMap(([k, v]) =>
+    v && typeof v === 'object' ? flatten(v, `${prefix}${k}.`) : [`${prefix}${k}`]
+  );
 }
 
-/**
- * Deep get value from nested object using dot notation key
- */
-function getNested(obj, key) {
-  return key.split('.').reduce((o, k) => (o && typeof o === 'object' ? o[k] : undefined), obj);
-}
-
-/**
- * Load locale modules dynamically
- */
-async function loadLocales() {
-  const [enMod, bnMod] = await Promise.all([
-    import('./locales/en.js'),
-    import('./locales/bn.js')
-  ]);
-  locales.en = enMod.default || enMod;
-  locales.bn = bnMod.default || bnMod;
-}
-
-/**
- * Apply language to document: html[lang], title, meta description, toggle buttons
- */
-function applyLang(lang) {
-  document.documentElement.lang = lang;
-
-  // Update document.title from locale
-  const titleKey = 'meta.title';
-  const title = t(titleKey);
-  if (title !== titleKey) document.title = title;
-
-  // Update meta description
-  const descKey = 'meta.description';
-  const desc = t(descKey);
-  if (desc !== descKey) {
-    let metaDesc = document.querySelector('meta[name="description"]');
-    if (!metaDesc) {
-      metaDesc = document.createElement('meta');
-      metaDesc.name = 'description';
-      document.head.appendChild(metaDesc);
-    }
-    metaDesc.content = desc;
+/** Resolve a dotted key like "nav.home" against a nested locale object. */
+function lookup(lang, key) {
+  const parts = key.split('.');
+  let node = locales[lang];
+  for (const p of parts) {
+    if (node == null || typeof node !== 'object') return undefined;
+    node = node[p];
   }
-
-  // Update toggle button aria-pressed
-  document.querySelectorAll('.lang-toggle__btn').forEach(btn => {
-    const isActive = btn.dataset.lang === lang;
-    btn.setAttribute('aria-pressed', isActive.toString());
-  });
+  return typeof node === 'string' ? node : undefined;
 }
 
-/**
- * Translate key with interpolation support.
- * Missing key in active language -> fall back to en; missing in both -> return key and console.warn
- */
-function t(key, params) {
-  const langDict = locales[currentLang] || {};
-  const fallbackDict = locales.en || {};
+function interpolate(str, params) {
+  if (!params) return str;
+  return str.replace(/\{(\w+)\}/g, (m, k) =>
+    params[k] !== undefined ? String(params[k]) : m
+  );
+}
 
-  let value = getNested(langDict, key);
-  if (value === undefined) {
-    value = getNested(fallbackDict, key);
-    if (value === undefined) {
-      console.warn(`[i18n] Missing translation key: "${key}" in both ${currentLang} and en`);
-      return key;
-    }
+/* ---- public API ---- */
+
+/**
+ * Translate a key with optional {param} interpolation.
+ * Falls back to en if missing in active language; returns key + warn if missing in both.
+ */
+export function t(key, params) {
+  let val = lookup(currentLang, key);
+  if (val === undefined) val = lookup('en', key);
+  if (val === undefined) {
+    console.warn(`Missing i18n key: "${key}"`);
+    return key;
   }
-
-  if (params && typeof value === 'string') {
-    return value.replace(/\{(\w+)\}/g, (_, name) => params[name] ?? `{${name}}`);
-  }
-
-  return value;
+  return interpolate(val, params);
 }
 
-/**
- * Initialize i18n: load locales, resolve language, apply, wire toggle
- */
-export async function initI18n() {
-  if (initialized) return;
-  await loadLocales();
-
-  currentLang = resolveInitialLang();
-  applyLang(currentLang);
-
-  // Wire language toggle buttons
-  document.querySelectorAll('.lang-toggle__btn').forEach(btn => {
-    btn.addEventListener('click', () => setLang(btn.dataset.lang));
-  });
-
-  // Apply translations to static elements with data-i18n
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.dataset.i18n;
-    const translated = t(key);
-    if (translated !== key) {
-      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-        el.placeholder = translated;
-      } else {
-        el.textContent = translated;
-      }
-    }
-  });
-
-  // Apply translations to attributes with data-i18n-attr
-  document.querySelectorAll('[data-i18n-attr]').forEach(el => {
-    const attrSpec = el.dataset.i18nAttr;
-    attrSpec.split(';').forEach(pair => {
-      const [attr, key] = pair.split(':');
-      if (attr && key) {
-        const translated = t(key.trim());
-        if (translated !== key.trim()) {
-          el.setAttribute(attr.trim(), translated);
-        }
-      }
-    });
-  });
-
-  initialized = true;
-}
-
-/**
- * Get current language
- */
 export function getLang() {
   return currentLang;
 }
 
 /**
- * Set language, persist, apply, fire languagechange event
+ * Set language, apply to DOM, persist, fire languagechange.
  */
 export function setLang(lang) {
-  if (lang !== 'en' && lang !== 'bn') return;
-  if (lang === currentLang) return;
-
+  if (lang !== 'en' && lang !== 'bn') return false;
   currentLang = lang;
-  localStorage.setItem('lang', lang);
-  applyLang(lang);
 
-  // Re-translate static elements
+  const html = document.documentElement;
+  html.setAttribute('lang', lang);
+
+  // toggle buttons
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    const isActive = btn.dataset.lang === lang;
+    btn.setAttribute('aria-pressed', String(isActive));
+  });
+
+  // persist
+  try { localStorage.setItem(LANG_STORAGE_KEY, lang); } catch { /* private mode */ }
+
+  // document title + meta
+  document.title = t('nav.topbar');
+  const meta = document.querySelector('meta[name="description"]');
+  if (meta) meta.setAttribute('content', t('nav.tagline'));
+
+  // apply static i18n bindings
+  applyStaticI18n();
+
+  // notify dynamic listeners
+  document.dispatchEvent(new CustomEvent('languagechange', {
+    detail: { lang }, bubbles: true,
+  }));
+
+  return true;
+}
+
+/* ---- static DOM bindings ---- */
+
+/**
+ * Walk every element with data-i18n / data-i18n-attr and set text / attributes.
+ * Safe to call repeatedly (on every language switch).
+ */
+export function applyStaticI18n() {
+  // text content
   document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.dataset.i18n;
-    const translated = t(key);
-    if (translated !== key) {
-      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-        el.placeholder = translated;
-      } else {
-        el.textContent = translated;
-      }
+    el.textContent = t(el.dataset.i18n);
+  });
+
+  // attributes: data-i18n-attr="placeholder:key;aria-label:key2"
+  document.querySelectorAll('[data-i18n-attr]').forEach(el => {
+    const pairs = el.dataset.i18nAttr.split(';');
+    for (const pair of pairs) {
+      const idx = pair.indexOf(':');
+      if (idx < 0) continue;
+      const attr = pair.slice(0, idx).trim();
+      const key = pair.slice(idx + 1).trim();
+      if (attr && key) el.setAttribute(attr, t(key));
     }
   });
-
-  document.querySelectorAll('[data-i18n-attr]').forEach(el => {
-    const attrSpec = el.dataset.i18nAttr;
-    attrSpec.split(';').forEach(pair => {
-      const [attr, key] = pair.split(':');
-      if (attr && key) {
-        const translated = t(key.trim());
-        if (translated !== key.trim()) {
-          el.setAttribute(attr.trim(), translated);
-        }
-      }
-    });
-  });
-
-  // Fire languagechange event
-  document.dispatchEvent(new CustomEvent('languagechange', { detail: { lang } }));
 }
 
-/**
- * Format number using Intl with active locale (bn-BD or en-US)
- */
+/* ---- Intl formatters ---- */
+
+const localeFor = () => (currentLang === 'bn' ? 'bn-BD' : 'en-US');
+
 export function fmtNumber(n) {
-  return new Intl.NumberFormat(currentLang === 'bn' ? 'bn-BD' : 'en-US').format(n);
+  return new Intl.NumberFormat(localeFor()).format(n);
 }
 
-/**
- * Format currency as BDT (৳) using Intl
- */
 export function fmtCurrency(n) {
-  return new Intl.NumberFormat(currentLang === 'bn' ? 'bn-BD' : 'en-US', {
-    style: 'currency',
-    currency: 'BDT',
-    currencyDisplay: 'symbol'
+  return new Intl.NumberFormat(localeFor(), {
+    style: 'currency', currency: 'BDT',
   }).format(n);
 }
 
-/**
- * Format date using Intl with active locale
- */
 export function fmtDate(d) {
-  const date = d instanceof Date ? d : new Date(d);
-  return new Intl.DateTimeFormat(currentLang === 'bn' ? 'bn-BD' : 'en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  }).format(date);
+  return new Intl.DateTimeFormat(localeFor(), {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(new Date(d));
+}
+
+/* ---- init ---- */
+
+export function initI18n() {
+  // 1. ?lang=bn|en  2. localStorage  3. navigator.language  4. en
+  const urlLang = new URLSearchParams(location.search).get('lang');
+  if (urlLang === 'bn' || urlLang === 'en') {
+    setLang(urlLang);
+  } else {
+    let saved = null;
+    try { saved = localStorage.getItem(LANG_STORAGE_KEY); } catch { /* ignore */ }
+    if (saved === 'bn' || saved === 'en') {
+      setLang(saved);
+    } else if (navigator.language && navigator.language.startsWith('bn')) {
+      setLang('bn');
+    } else {
+      setLang('en');
+    }
+  }
+
+  // wire toggle buttons
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => setLang(btn.dataset.lang));
+  });
+
+  // cross-tab sync
+  try {
+    addEventListener('storage', e => {
+      if (e.key === LANG_STORAGE_KEY && (e.newValue === 'bn' || e.newValue === 'en')) {
+        setLang(e.newValue);
+      }
+    });
+  } catch { /* ignore */ }
 }

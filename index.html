@@ -3,51 +3,95 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" data-i18n="meta.description">
-  <title data-i18n="meta.title">Tender Package Builder</title>
+  <title>Tender Package Builder</title>
+  <meta name="description" content="Match, check, and build your tender document package">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%233b3b4f'/%3E%3Cpath d='M9 8h10l4 4v12H9z' fill='%23f7f4ee'/%3E%3Cpath d='M19 8v4h4' fill='%23d9d3c7'/%3E%3C/svg%3E">
+  <script>
+    // Guard: ES modules don't work on file:// — show helpful message
+    if (location.protocol === 'file:') {
+      document.addEventListener('DOMContentLoaded', function () {
+        var div = document.createElement('div');
+        div.style.cssText = 'max-width:32rem;margin:4rem auto;padding:1.5rem;border:1px solid #c94f4f;border-radius:8px;font-family:system-ui,sans-serif;background:#fdf3f3;color:#3a2020;line-height:1.6';
+        div.textContent = 'This page must be opened through a web server (e.g. GitHub Pages or a local HTTP server), not directly as a file. Please serve the folder over HTTP and reload.';
+        document.body.prepend(div);
+      });
+    }
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Noto+Sans+Bengali:wght@400;600&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Noto+Sans+Bengali:wght@400;600&display=swap" media="print" onload="this.media='all'">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Noto+Sans+Bengali:wght@400;600&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="./css/tokens.css">
   <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/components.css">
 </head>
 <body>
-  <header class="topbar" role="banner">
-    <div class="topbar__brand">
-      <span class="topbar__title" data-i18n="nav.topbar">Tender Package Builder</span>
+
+  <!-- Top bar -->
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <span class="logo" data-i18n="nav.topbar">Tender Package Builder</span>
+      <span class="tagline" data-i18n="nav.tagline"></span>
     </div>
-    <nav class="topbar__nav" aria-label="Language selection">
-      <div class="lang-toggle" role="group" aria-label="Language">
-        <button
-          class="lang-toggle__btn"
-          data-lang="bn"
-          aria-pressed="false"
-          data-i18n="toggle.bn">বাংলা
-        </button>
-        <button
-          class="lang-toggle__btn"
-          data-lang="en"
-          aria-pressed="true"
-          data-i18n="toggle.en">EN
-        </button>
+    <div class="top-bar-right">
+      <div class="lang-toggle" role="group" aria-label="Language selection" data-i18n-attr="aria-label:a11y.lang_toggle">
+        <button class="lang-btn en-btn" aria-pressed="false" data-lang="en" type="button">EN</button>
+        <button class="lang-btn bn-btn" aria-pressed="true" data-lang="bn" type="button">বাংলা</button>
       </div>
-    </nav>
+    </div>
   </header>
 
-  <main class="main" role="main">
-    <section class="hero" aria-labelledby="hero-title">
-      <h1 id="hero-title" data-i18n="hero.title">Tender Package Builder</h1>
-      <p data-i18n="hero.subtitle">Build complete tender document packages with ease</p>
-      <nav aria-label="Primary navigation">
-        <a href="#" class="btn btn--primary" data-i18n="nav.home">Get Started</a>
-      </nav>
-    </section>
+  <main class="app-container">
+
+    <!-- Tender summary strip -->
+    <section class="tender-summary" id="tender-summary" aria-live="polite"></section>
+
+    <!-- Two-pane workspace -->
+    <div class="workspace">
+
+      <!-- Left: requirements checklist -->
+      <section class="pane requirements-pane">
+        <h2 class="pane-heading" data-i18n="requirements.heading">Requirements</h2>
+        <div class="requirements-list" id="requirements-list"></div>
+      </section>
+
+      <!-- Right: file tray -->
+      <section class="pane file-tray-pane">
+        <h2 class="pane-heading" data-i18n="upload.heading">Uploaded files</h2>
+
+        <div class="dropzone" id="dropzone">
+          <p class="dropzone-text" data-i18n="upload.drop">Drop PDFs here</p>
+          <p class="dropzone-or" data-i18n="upload.or">or</p>
+          <button class="browse-btn" id="browse-btn" type="button" data-i18n="upload.browse">Browse files</button>
+          <input type="file" id="file-input" class="file-input" accept=".pdf,application/pdf" multiple>
+        </div>
+
+        <p class="upload-error" id="upload-error" hidden role="alert"></p>
+        <p class="upload-empty" id="upload-empty" data-i18n="upload.empty">No PDFs added yet — drop files here</p>
+
+        <div class="file-list" id="file-list"></div>
+      </section>
+
+    </div>
   </main>
 
-  <footer class="footer" role="contentinfo">
-    <p data-i18n="footer.copyright">© 2024 Tender Package Builder</p>
+  <!-- Sticky status + generate bar -->
+  <footer class="status-bar">
+    <div class="blocking-bar" id="blocking-bar" hidden aria-live="polite"></div>
+    <!-- No data-i18n: app.js owns this button's label (loading state) -->
+    <button class="generate-btn" id="generate-btn" type="button" disabled>Generate package</button>
   </footer>
+
+  <!-- Libraries (allowed per project.md) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
 
   <script type="module" src="./js/main.js"></script>
 </body>

@@ -1,14 +1,21 @@
-// Main entry point - Tender Package Builder
-import { initI18n } from './i18n.js';
+/**
+ * Entry point — Tender Package Builder.
+ */
 
-// Initialize i18n on DOM ready
-document.addEventListener('DOMContentLoaded', async () => {
-  await initI18n();
-  console.log('[Tender Package Builder] i18n initialized, lang:', document.documentElement.lang);
-});
+import { initI18n, applyStaticI18n } from './i18n.js';
+import { initApp } from './app.js';
 
-// Listen for language changes to re-render dynamic content
-document.addEventListener('languagechange', (e) => {
-  console.log('[Tender Package Builder] Language changed to:', e.detail.lang);
-  // Dynamic content re-rendering will be added in later milestones
-});
+function boot() {
+  initI18n();         // resolves language, applies static i18n, wires toggle
+  applyStaticI18n();  // ensure all data-i18n elements are translated
+  // initApp fetches documents/requirements.json with embedded fallback,
+  // then wires upload/generate and renders. Internal errors are caught there;
+  // this catch is only a last resort so the page never dies silently.
+  initApp().catch(e => console.error('App init failed:', e));
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
+}

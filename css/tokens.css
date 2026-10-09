@@ -1,120 +1,63 @@
-/* Design Tokens - Tender Package Builder */
+/* Design tokens — Tender Package Builder */
 
-/* Color Palette - Warm paper / graphite ink / muted semantic hues */
 :root {
-  /* Surfaces */
-  --color-paper: #faf8f5;
-  --color-paper-dark: #f0ebe3;
-  --color-paper-border: #e8e0d4;
+  /* Palette — tender document / manila folder / rubber stamp */
+  --paper:         #faf8f4;
+  --paper-warm:    #f3ede2;
+  --ink:           #1e1e1e;
+  --ink-soft:      #444444;
+  --ink-muted:     #777777;
+  --line:          rgba(0,0,0,.10);
+  --line-strong:   rgba(0,0,0,.18);
 
-  /* Text */
-  --color-ink: #1a1a1a;
-  --color-ink-muted: #4a4a4a;
-  --color-ink-light: #6b6b6b;
+  /* Status hues */
+  --ok:            #2e7d32;
+  --ok-bg:         #e8f5e9;
+  --warn:          #b26a00;
+  --warn-bg:       #fff8e1;
+  --blocked:       #c62828;
+  --blocked-bg:    #fce4ec;
+  --neutral:       #616161;
+  --neutral-bg:    #eeeeee;
 
-  /* Accent (desaturated, off purple/blue axis) - ~10% visual weight */
-  --color-accent: #5a4fc4;
-  --color-accent-hover: #4a3fc0;
-  --color-accent-light: #e8e6f5;
-  --color-accent-focus: #5a4fc4;
+  /* Accent — reserved: generate btn, active toggle, focus, OK badge */
+  --accent:        #4a5ab5;
+  --accent-light:  #e8eaf6;
 
-  /* Semantic Status Colors (muted, stamp-like) */
-  --color-status-ok: #2d7d2d;
-  --color-status-ok-bg: #e8f5e8;
-  --color-status-ok-border: #b8e0b8;
+  /* Type */
+  --font-body:     'Inter', system-ui, -apple-system, sans-serif;
+  --font-display:  Charter, Georgia, 'Times New Roman', serif;
+  --font-bn:       'Noto Sans Bengali', 'Inter', sans-serif;
 
-  --color-status-amber: #b8860b;
-  --color-status-amber-bg: #fff8e1;
-  --color-status-amber-border: #ffe082;
+  --fs-sm:   0.75rem;
+  --fs-base: 0.875rem;
+  --fs-md:   1rem;
+  --fs-lg:   1.25rem;
+  --fs-xl:   1.5rem;
 
-  --color-status-red: #c0392b;
-  --color-status-red-bg: #fdeaea;
-  --color-status-red-border: #f5b7b7;
+  /* Spacing */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-6: 1.5rem;
 
-  --color-status-gray: #757575;
-  --color-status-gray-bg: #f5f5f5;
-  --color-status-gray-border: #e0e0e0;
+  /* Radius */
+  --r-sm: 4px;
+  --r-md: 8px;
 
-  /* Interactive */
-  --color-link: #5a4fc4;
-  --color-link-hover: #4a3fc0;
+  /* Shadow */
+  --shadow: 0 1px 3px rgba(0,0,0,.08);
 
-  /* Focus */
-  --color-focus-ring: #5a4fc4;
-  --color-focus-ring-offset: #faf8f5;
-
-  /* Shadows */
-  --shadow-low: 0 1px 2px rgba(26, 26, 26, 0.06);
-  --shadow-medium: 0 4px 12px rgba(26, 26, 26, 0.08);
-  --shadow-high: 0 8px 24px rgba(26, 26, 26, 0.1);
-
-  /* Borders */
-  --border-width: 1px;
-  --border-radius-sm: 4px;
-  --border-radius-md: 8px;
-  --border-radius-lg: 12px;
-
-  /* Typography */
-  --font-heading: Georgia, 'Times New Roman', serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-bn: 'Noto Sans Bengali', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-
-  --font-size-xs: 0.75rem;   /* 12px */
-  --font-size-sm: 0.875rem;  /* 14px */
-  --font-size-base: 1rem;    /* 16px */
-  --font-size-lg: 1.125rem;  /* 18px */
-  --font-size-xl: 1.25rem;   /* 20px */
-  --font-size-2xl: 1.5rem;   /* 24px */
-  --font-size-3xl: 2rem;     /* 32px */
-
-  --font-weight-normal: 400;
-  --font-weight-semibold: 600;
-
-  --line-height-tight: 1.3;
-  --line-height-normal: 1.5;
-  --line-height-relaxed: 1.7;
-  --line-height-bn: 1.8;
-
-  /* Spacing Scale */
-  --space-1: 0.25rem;  /* 4px */
-  --space-2: 0.5rem;   /* 8px */
-  --space-3: 0.75rem;  /* 12px */
-  --space-4: 1rem;     /* 16px */
-  --space-5: 1.25rem;  /* 20px */
-  --space-6: 1.5rem;   /* 24px */
-  --space-8: 2rem;     /* 32px */
-  --space-10: 2.5rem;  /* 40px */
-  --space-12: 3rem;    /* 48px */
-
-  /* Breakpoints */
+  /* Breakpoints referenced in media queries */
   --bp-mobile: 360px;
-  --bp-tablet: 768px;
   --bp-desktop: 1280px;
-
-  /* Transitions */
-  --transition-fast: 120ms ease-out;
-  --transition-normal: 180ms ease-out;
-  --transition-slow: 240ms ease-out;
-
-  /* Z-index */
-  --z-dropdown: 100;
-  --z-sticky: 200;
-  --z-modal: 300;
-  --z-toast: 400;
 }
 
-/* Bangla-specific overrides */
-html[lang="bn"] {
-  --font-body: var(--font-bn);
-  --line-height-normal: var(--line-height-bn);
-  --line-height-relaxed: 1.9;
-}
-
-/* Reduced motion */
+/* ---- Reduced motion ---- */
 @media (prefers-reduced-motion: reduce) {
-  :root {
-    --transition-fast: 0ms;
-    --transition-normal: 0ms;
-    --transition-slow: 0ms;
+  *, *::before, *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
   }
 }

@@ -6,6 +6,11 @@
 !/LICENSE
 !/.nojekyll
 !/index.html
+!/README.md
 !/css/
 !/js/
 !/scripts/
+!/documents/
+!/docs/
+!/output/
+!/screenshots/
